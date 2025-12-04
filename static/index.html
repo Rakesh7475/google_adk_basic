@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Agent Demo UI</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 24px
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px
+        }
+
+        #results {
+            white-space: pre-wrap;
+            background: #f7f7f7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px
+        }
+
+        button {
+            padding: 8px 12px;
+            margin-top: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Agent Demo (FastAPI)</h2>
+    <p>Type a query and press <b>Send</b>. This calls the local `agent_demo.SimpleAgent` and shows tool outputs.</p>
+
+    <textarea id="query">What is 25 multiplied by 4?</textarea>
+    <br />
+    <button id="send">Send</button>
+    <div id="status"></div>
+    <div id="results"></div>
+
+    <script>
+        const send = document.getElementById('send');
+        const queryEl = document.getElementById('query');
+        const results = document.getElementById('results');
+        const status = document.getElementById('status');
+
+        send.addEventListener('click', async () => {
+            const q = queryEl.value.trim();
+            if (!q) return;
+            status.textContent = 'Sending...';
+            results.textContent = '';
+            try {
+                const resp = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: q })
+                });
+                const data = await resp.json();
+                status.textContent = resp.ok ? 'OK' : `Error ${resp.status}`;
+                results.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                status.textContent = 'Network error';
+                results.textContent = String(err);
+            }
+        });
+    </script>
+</body>
+
+</html>
